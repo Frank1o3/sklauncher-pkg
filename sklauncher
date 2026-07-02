@@ -1,6 +1,6 @@
 #!/bin/sh
 
-exec /opt/sklauncher/sklauncher \
+exec /opt/sklauncher/AppRun \
   --enable-features=UseOzonePlatform \
   --ozone-platform=wayland \
   --wayland-text-input-version=3 \
