@@ -1,62 +1,74 @@
 # Maintainer: Frank1o3
 pkgname=sklauncher
 pkgver=4.0.29
-pkgrel=2
+pkgrel=3
 pkgdesc="A custom Minecraft launcher"
 arch=('x86_64')
 url="https://skmedix.pl/"
 license=('custom')
 
-# System dependencies required to run the Electron app on CachyOS
-depends=('gtk3' 'libnotify' 'libxss' 'libxtst' 'nss' 'alsa-lib' 'libappindicator-gtk3')
+depends=(
+    'gtk3'
+    'libnotify'
+    'libxss'
+    'libxtst'
+    'nss'
+    'alsa-lib'
+    'libappindicator-gtk3'
+)
 
-# 1. The AppImage from the official binaries repo
-# 2. Your custom .desktop file from your GitHub repo
-# (Note: If your default branch is 'master' instead of 'main', change 'main' to 'master' below)
 source=(
     "SKlauncher-${pkgver}-x86_64.AppImage::https://github.com/sklauncher/binaries/releases/download/v${pkgver}/SKlauncher-${pkgver}-x86_64.AppImage"
     "sklauncher.desktop::https://raw.githubusercontent.com/Frank1o3/sklauncher-pkg/main/sklauncher.desktop"
-    "sklauncher::https://raw.githubusercontent.com/Frank1o3/sklauncher-pkg/main/sklauncher"
+    "sklauncher.desktop::https://raw.githubusercontent.com/Frank1o3/sklauncher-pkg/main/sklauncher"
 )
 
-# SHA256 hashes. 
-# The first is the AppImage hash. 
-# The second is for the desktop file (paste the hash you got from step 2 here)
 sha256sums=(
     '5e0b2f817940faaf96c310b69e207c66192f7c77cd27dd9e2751345fa65b846f'
-    'a1b4a957a9cee7277c87ff55f46bb25ab23e6ca4bd8067ac66c6a32da1dbeb84'
-    'a8f35eea60bef7f0a666c67b90cc8c4814049891b32269a0be9817dc1be0dcb3'
+    '0300add88520f333a1558bd98a42ca7ab6853cb62c2f5097689e8755447e09ad'
+    'f7a878095276ee1d83fdb096bfe87f109ccfa8373ac29cdb92b290df66c76d4f'
 )
 
 prepare() {
-    # Make the AppImage executable
     chmod +x "SKlauncher-${pkgver}-x86_64.AppImage"
-    
-    # Extract the AppImage using its built-in extractor
-    msg2 "Extracting AppImage..."
     ./SKlauncher-${pkgver}-x86_64.AppImage --appimage-extract
 }
 
 package() {
-    # 1. Create the installation directory in /opt
     install -d "$pkgdir/opt/sklauncher"
+
+    # Copy EVERYTHING exactly as extracted
+    cp -a squashfs-root/. "$pkgdir/opt/sklauncher"
+
+    # AppImage extracts restrictive permissions (700).
+    # Packages installed under /opt must be world-readable/executable.
+    find "$pkgdir/opt/sklauncher" -type d -exec chmod 755 {} +
+    find "$pkgdir/opt/sklauncher" -type f -exec chmod 644 {} +
+
+    # Restore executable bits
+    chmod 755 \
+        "$pkgdir/opt/sklauncher/AppRun" \
+        "$pkgdir/opt/sklauncher/sklauncher" \
+        "$pkgdir/opt/sklauncher/chrome_crashpad_handler"
     
-    # 2. Copy all extracted files to /opt
-    cp -a squashfs-root/* "$pkgdir/opt/sklauncher/"
-    
-    # 3. Remove the bundled "old Ubuntu" libraries to force CachyOS system packages
-    rm -rf "$pkgdir/opt/sklauncher/usr/lib"
-    
-    # 4. Fix Electron sandbox permissions (Required for Electron apps to not crash)
+    rm -f "$pkgdir/opt/sklauncher/pl.skmedix.sklauncher.desktop"
+
+    # Remove bundled libraries but keep the directory
+    if [[ -d "$pkgdir/opt/sklauncher/usr/lib" ]]; then
+        find "$pkgdir/opt/sklauncher/usr/lib" -mindepth 1 -delete
+    fi
+
+    # Electron sandbox
+    chown root:root "$pkgdir/opt/sklauncher/chrome-sandbox"
     chmod 4755 "$pkgdir/opt/sklauncher/chrome-sandbox"
-    
-    # 5. Install the wrapper script from the downloaded source
-    install -Dm755 "$srcdir/sklauncher" "$pkgdir/usr/bin/sklauncher"
-    
-    # 6. Install your custom desktop shortcut directly from the downloaded source
-    install -Dm644 "$srcdir/sklauncher.desktop" "$pkgdir/usr/share/applications/sklauncher.desktop"
-    
-    # 7. Install the 512x512 icon so it shows up properly in your app launcher
-    install -Dm644 squashfs-root/usr/share/icons/hicolor/512x512/apps/sklauncher.png \
+
+    install -Dm644 "$srcdir/sklauncher" \
+        "$pkgdir/usr/bin/sklauncher"
+
+    install -Dm644 "$srcdir/sklauncher.desktop" \
+        "$pkgdir/usr/share/applications/sklauncher.desktop"
+
+    install -Dm644 \
+        "$pkgdir/opt/sklauncher/usr/share/icons/hicolor/512x512/apps/sklauncher.png" \
         "$pkgdir/usr/share/icons/hicolor/512x512/apps/sklauncher.png"
 }
