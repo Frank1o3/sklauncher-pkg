@@ -8,6 +8,10 @@ arch=('x86_64')
 url="https://skmedix.pl/"
 license=('custom')
 
+provides=("sklauncher")
+conflicts=("sklauncher-bin")
+options=('!strip')
+
 depends=(
     'gtk3'
     'libnotify'
