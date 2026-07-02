@@ -24,7 +24,7 @@ source=(
 # The second is for the desktop file (paste the hash you got from step 2 here)
 sha256sums=(
     '5e0b2f817940faaf96c310b69e207c66192f7c77cd27dd9e2751345fa65b846f'
-    '8a9452dcca7ab3bac222ea3f81c207bbb324a368fe6341814b31c1810c78e693'
+    'a1b4a957a9cee7277c87ff55f46bb25ab23e6ca4bd8067ac66c6a32da1dbeb84'
     'a8f35eea60bef7f0a666c67b90cc8c4814049891b32269a0be9817dc1be0dcb3'
 )
 
