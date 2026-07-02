@@ -1,0 +1,3 @@
+#!/bin/sh
+
+exec /opt/sklauncher/sklauncher --enable-features=UseOzonePlatform --ozone-platform=wayland --wayland-text-input-version=3

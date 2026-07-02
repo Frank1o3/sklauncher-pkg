@@ -1,7 +1,7 @@
 [Desktop Entry]
 Name=SKlauncher
 Comment=A custom Minecraft launcher
-Exec=/usr/bin/sklauncher %U
+Exec=/usr/bin/sklauncher
 Icon=sklauncher
 Terminal=false
 Type=Application
